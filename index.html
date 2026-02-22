@@ -94,40 +94,7 @@ canvas {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Touch ripple */
-.touch-ripple {
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 10;
-  border: 1px solid rgba(180, 40, 60, 0.5);
-  animation: rippleExpand 1.2s cubic-bezier(0, 0.5, 0.3, 1) forwards;
-}
-.touch-ripple:nth-child(odd) {
-  animation-duration: 1.5s;
-  border-color: rgba(120, 20, 40, 0.3);
-}
-
-@keyframes rippleExpand {
-  from { width: 0; height: 0; opacity: 0.8; }
-  to { width: 400px; height: 400px; opacity: 0; }
-}
-
-/* Burst glow on touch */
-.touch-glow {
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9;
-  background: radial-gradient(circle, rgba(180,40,60,0.25), rgba(120,20,40,0.1) 40%, transparent 70%);
-  animation: glowFade 1.5s ease-out forwards;
-}
-
-@keyframes glowFade {
-  from { width: 0; height: 0; opacity: 1; }
-  50% { opacity: 0.6; }
-  to { width: 500px; height: 500px; opacity: 0; }
-}
+/* No DOM-based touch effects - all on canvas */
 </style>
 </head>
 <body>
@@ -302,49 +269,128 @@ class Cell {
   }
 }
 
-// --- Touch particles ---
-let touchParticles = [];
-class TouchParticle {
+// --- Touch effects ---
+let touchEffects = [];
+
+// Branching vessel that grows from touch point
+class BranchingVessel {
+  constructor(x, y) {
+    this.branches = [];
+    this.life = 1;
+    this.decay = 0.008;
+    this.growBranch(x, y, null, 0);
+  }
+  growBranch(x, y, parent, depth) {
+    if (depth > 4) return;
+    const branch = { points: [{ x, y }], depth, growing: true, targetLen: Math.floor(Math.random() * 8 + 4) };
+    this.branches.push(branch);
+    const angle = parent ? (Math.random() * Math.PI * 2) : (Math.random() * Math.PI * 2);
+    let curAngle = angle;
+    const grow = () => {
+      if (!branch.growing || branch.points.length >= branch.targetLen) {
+        branch.growing = false;
+        // Maybe spawn sub-branches
+        if (depth < 3 && Math.random() > 0.3) {
+          const last = branch.points[branch.points.length - 1];
+          const numSubs = Math.floor(Math.random() * 2 + 1);
+          for (let i = 0; i < numSubs; i++) {
+            this.growBranch(last.x, last.y, branch, depth + 1);
+          }
+        }
+        return;
+      }
+      const last = branch.points[branch.points.length - 1];
+      curAngle += (Math.random() - 0.5) * 0.8;
+      const dist = Math.random() * 15 + 8;
+      branch.points.push({ x: last.x + Math.cos(curAngle) * dist, y: last.y + Math.sin(curAngle) * dist });
+      setTimeout(grow, 30);
+    };
+    setTimeout(grow, depth * 80 + Math.random() * 60);
+  }
+  update() { this.life -= this.decay; }
+  draw() {
+    if (this.life <= 0) return;
+    for (const branch of this.branches) {
+      if (branch.points.length < 2) continue;
+      const w = Math.max(0.3, (1 - branch.depth * 0.2)) * 2;
+      const alpha = this.life * (1 - branch.depth * 0.15);
+      ctx.beginPath();
+      ctx.moveTo(branch.points[0].x, branch.points[0].y);
+      for (let i = 1; i < branch.points.length; i++) {
+        ctx.lineTo(branch.points[i].x, branch.points[i].y);
+      }
+      ctx.strokeStyle = `rgba(200, 40, 60, ${alpha * 0.7})`;
+      ctx.lineWidth = w;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.shadowColor = `rgba(220, 50, 70, ${alpha * 0.5})`;
+      ctx.shadowBlur = 12;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Glow dot at tip
+      if (branch.growing) {
+        const tip = branch.points[branch.points.length - 1];
+        ctx.beginPath();
+        ctx.arc(tip.x, tip.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 100, 120, ${alpha})`;
+        ctx.shadowColor = 'rgba(255, 80, 100, 0.8)';
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+  }
+}
+
+// Shockwave ring
+class Shockwave {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.radius = 0;
+    this.maxRadius = Math.random() * 100 + 80;
+    this.life = 1;
+  }
+  update() {
+    this.radius += 2.5;
+    this.life = Math.max(0, 1 - this.radius / this.maxRadius);
+  }
+  draw() {
+    if (this.life <= 0) return;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(180, 40, 60, ${this.life * 0.35})`;
+    ctx.lineWidth = 1.5 * this.life;
+    ctx.shadowColor = `rgba(200, 50, 70, ${this.life * 0.3})`;
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+}
+
+// Scatter dots
+class ScatterDot {
   constructor(x, y) {
     this.x = x; this.y = y;
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 4 + 1;
+    const speed = Math.random() * 3 + 1.5;
     this.vx = Math.cos(angle) * speed;
     this.vy = Math.sin(angle) * speed;
     this.life = 1;
-    this.decay = Math.random() * 0.012 + 0.005;
-    this.size = Math.random() * 3 + 1;
-    this.trail = [];
+    this.decay = Math.random() * 0.02 + 0.01;
+    this.size = Math.random() * 2.5 + 0.8;
   }
   update() {
-    this.trail.push({ x: this.x, y: this.y, life: this.life });
-    if (this.trail.length > 8) this.trail.shift();
-    this.x += this.vx;
-    this.y += this.vy;
-    this.vx *= 0.97;
-    this.vy *= 0.97;
-    this.vy += 0.02;
+    this.x += this.vx; this.y += this.vy;
+    this.vx *= 0.96; this.vy *= 0.96;
     this.life -= this.decay;
   }
   draw() {
     if (this.life <= 0) return;
-    // Trail
-    for (let i = 0; i < this.trail.length; i++) {
-      const t = this.trail[i];
-      const a = (i / this.trail.length) * this.life * 0.15;
-      ctx.beginPath();
-      ctx.arc(t.x, t.y, this.size * (i / this.trail.length), 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(180, 40, 60, ${a})`;
-      ctx.fill();
-    }
-    // Main particle
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(200, 50, 70, ${this.life * 0.6})`;
-    ctx.shadowColor = 'rgba(200, 40, 60, 0.5)';
-    ctx.shadowBlur = 8;
+    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200, 60, 80, ${this.life * 0.5})`;
     ctx.fill();
-    ctx.shadowBlur = 0;
   }
 }
 
@@ -356,49 +402,17 @@ const cells = Array.from({ length: 40 }, () => new Cell());
 function onInteract(x, y) {
   mouse.x = x; mouse.y = y; mouse.active = true;
 
-  // More particles, varied sizes
-  for (let i = 0; i < 35; i++) {
-    touchParticles.push(new TouchParticle(x, y));
-  }
+  // Branching vessel grows from touch
+  touchEffects.push(new BranchingVessel(x, y));
 
-  // Multiple ripple rings with delay
-  for (let i = 0; i < 3; i++) {
-    setTimeout(() => {
-      const ripple = document.createElement('div');
-      ripple.className = 'touch-ripple';
-      ripple.style.left = (x - 200) + 'px';
-      ripple.style.top = (y - 200) + 'px';
-      document.body.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 1500);
-    }, i * 120);
-  }
+  // Shockwave rings
+  touchEffects.push(new Shockwave(x, y));
+  setTimeout(() => touchEffects.push(new Shockwave(x, y)), 150);
 
-  // Central glow burst
-  const glow = document.createElement('div');
-  glow.className = 'touch-glow';
-  glow.style.left = (x - 250) + 'px';
-  glow.style.top = (y - 250) + 'px';
-  document.body.appendChild(glow);
-  setTimeout(() => glow.remove(), 1500);
-
-  // Spawn new vessel from touch point
-  const v = new Vessel();
-  v.points = [{ x, y }];
-  const segs = Math.floor(Math.random() * 5 + 4);
-  for (let i = 0; i < segs; i++) {
-    const last = v.points[v.points.length - 1];
-    const angle = Math.random() * Math.PI * 2;
-    const dist = Math.random() * 80 + 30;
-    v.points.push({ x: last.x + Math.cos(angle) * dist, y: last.y + Math.sin(angle) * dist });
+  // Scatter dots
+  for (let i = 0; i < 15; i++) {
+    touchEffects.push(new ScatterDot(x, y));
   }
-  v.alpha = 0.25;
-  v.width = 1.5;
-  vessels.push(v);
-  // Fade it out after a while
-  setTimeout(() => {
-    const idx = vessels.indexOf(v);
-    if (idx > -1) vessels.splice(idx, 1);
-  }, 4000);
 
   clearTimeout(window._mouseTimeout);
   window._mouseTimeout = setTimeout(() => { mouse.active = false; }, 2000);
@@ -432,8 +446,8 @@ function animate(t) {
   vessels.forEach(v => v.draw(time));
   cells.forEach(c => { c.update(time); c.draw(); });
 
-  touchParticles = touchParticles.filter(p => p.life > 0);
-  touchParticles.forEach(p => { p.update(); p.draw(); });
+  touchEffects = touchEffects.filter(e => e.life > 0);
+  touchEffects.forEach(e => { e.update(); e.draw(); });
 
   requestAnimationFrame(animate);
 }
