@@ -228,10 +228,17 @@ class VesselTree {
       ctx.lineWidth = w;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.shadowColor = `rgba(220, 50, 70, ${a * 0.6})`;
-      ctx.shadowBlur = 8;
       ctx.stroke();
-      ctx.shadowBlur = 0;
+
+      // Wider dim stroke for glow effect (cheap alternative to shadowBlur)
+      ctx.beginPath();
+      ctx.moveTo(b.pts[0].x, b.pts[0].y);
+      for (let i = 1; i < b.pts.length; i++) {
+        ctx.lineTo(b.pts[i].x, b.pts[i].y);
+      }
+      ctx.strokeStyle = `rgba(220, 50, 70, ${a * 0.15})`;
+      ctx.lineWidth = w + 6;
+      ctx.stroke();
 
       // Glowing tip while growing
       if (!b.done) {
@@ -239,10 +246,12 @@ class VesselTree {
         ctx.beginPath();
         ctx.arc(tip.x, tip.y, 2.5 - b.depth * 0.3, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 120, 140, ${a})`;
-        ctx.shadowColor = `rgba(255, 100, 120, ${a})`;
-        ctx.shadowBlur = 12;
         ctx.fill();
-        ctx.shadowBlur = 0;
+        // Soft glow around tip
+        ctx.beginPath();
+        ctx.arc(tip.x, tip.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 100, 120, ${a * 0.2})`;
+        ctx.fill();
       }
     }
   }
