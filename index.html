@@ -358,6 +358,25 @@ document.addEventListener('touchstart', e => {
 // ==============================
 // MAIN LOOP
 // ==============================
+// === PERF LOGGING ===
+let frameCount = 0, lastLog = 0;
+function logPerf(t) {
+  frameCount++;
+  if (t - lastLog > 1000) {
+    let totalBranches = 0, totalPts = 0, activeIntervals = 0;
+    for (const e of effects) {
+      if (e.branches) {
+        totalBranches += e.branches.length;
+        for (const b of e.branches) totalPts += b.pts.length;
+        if (e._intervals) activeIntervals += e._intervals.length;
+      }
+    }
+    console.log(`[PERF] fps=${frameCount} effects=${effects.length} branches=${totalBranches} pts=${totalPts} intervals=${activeIntervals}`);
+    frameCount = 0;
+    lastLog = t;
+  }
+}
+
 function animate(t) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawBackground(t || 0);
@@ -365,9 +384,35 @@ function animate(t) {
   effects = effects.filter(e => e.life > 0);
   for (const e of effects) { e.update(); e.draw(); }
 
+  logPerf(t || 0);
   requestAnimationFrame(animate);
 }
 animate();
+
+// === AUTO-TEST: simulate 20 rapid taps ===
+if (location.hash === '#perftest') {
+  let tapCount = 0;
+  const tapInterval = setInterval(() => {
+    const x = Math.random() * window.innerWidth;
+    const y = Math.random() * window.innerHeight;
+    onInteract(x, y);
+    tapCount++;
+    if (tapCount >= 20) clearInterval(tapInterval);
+  }, 200);
+  // Dump final stats after 15s
+  setTimeout(() => {
+    let totalBranches = 0, totalPts = 0, activeIntervals = 0;
+    for (const e of effects) {
+      if (e.branches) {
+        totalBranches += e.branches.length;
+        for (const b of e.branches) totalPts += b.pts.length;
+        if (e._intervals) activeIntervals += e._intervals.length;
+      }
+    }
+    console.log(`[FINAL] effects=${effects.length} branches=${totalBranches} pts=${totalPts} intervals=${activeIntervals}`);
+    document.title = `DONE: e=${effects.length} b=${totalBranches} p=${totalPts} i=${activeIntervals}`;
+  }, 15000);
+}
 </script>
 </body>
 </html>
