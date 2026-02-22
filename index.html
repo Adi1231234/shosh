@@ -67,17 +67,21 @@ canvas {
   animation: revealText 1s ease 1.4s forwards;
 }
 
-.anatomy-text {
+.tap-text {
   font-size: clamp(1.6rem, 6vw, 2.2rem);
   font-weight: 700;
-  color: rgba(255, 100, 120, 1);
+  color: rgba(220, 80, 100, 0.9);
   letter-spacing: 0.1em;
   opacity: 0;
   transform: translateY(15px);
   animation: revealText 1s cubic-bezier(0.16, 1, 0.3, 1) 1.7s forwards, tapPulse 1.2s ease-in-out 2.5s infinite;
-  cursor: pointer;
-  pointer-events: auto;
   text-shadow: 0 0 20px rgba(220, 50, 70, 0.5);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+@keyframes revealText {
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes tapPulse {
@@ -98,10 +102,6 @@ canvas {
   opacity: 0;
   animation: revealText 1s ease 2.5s forwards;
 }
-
-@keyframes revealText {
-  to { opacity: 1; transform: translateY(0); }
-}
 </style>
 </head>
 <body>
@@ -112,7 +112,7 @@ canvas {
   <div class="title">בהצלחה שושי ❤️</div>
   <div class="subtitle">את הכי טובה בעולם!!! כל הלימודים ישתלמו ואת תהיי הרופאה הכי טובה! ❤️</div>
   <div class="line"></div>
-  <div class="anatomy-text">לחצי עליי</div>
+  <div class="tap-text">לחצי עליי</div>
 </div>
 
 <div class="hint">גע במסך</div>
@@ -128,29 +128,26 @@ function resize() {
   H = window.innerHeight;
   c.width = W * dpr;
   c.height = H * dpr;
-  ctx.scale(dpr, dpr);
 }
 resize();
 window.addEventListener('resize', resize);
 
 // ==============================
-// BACKGROUND: slow flowing gradient + subtle noise
+// BACKGROUND
 // ==============================
 function drawBackground(t) {
-  // Deep dark with slow moving color
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const gx = W * 0.5 + Math.sin(t * 0.0003) * W * 0.2;
   const gy = H * 0.5 + Math.cos(t * 0.0004) * H * 0.15;
   const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, Math.max(W, H) * 0.7);
   grad.addColorStop(0, 'rgba(40, 5, 15, 0.4)');
   grad.addColorStop(0.5, 'rgba(15, 2, 8, 0.3)');
   grad.addColorStop(1, 'rgba(5, 0, 5, 0)');
-
   ctx.fillStyle = '#050005';
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // Heartbeat pulse
   const beat = Math.pow(Math.max(0, Math.sin(t * 0.004)), 12);
   if (beat > 0.01) {
     const pg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, H * 0.6);
@@ -161,193 +158,188 @@ function drawBackground(t) {
   }
 }
 
-// No background elements - clean
-
 // ==============================
-// TOUCH EFFECTS
+// VESSEL TREES - pre-computed, no intervals
 // ==============================
-let effects = [];
+// Build entire tree synchronously, animate reveal via progress
+function buildTree(x, y) {
+  const branches = [];
+  const queue = [{ x, y, angle: Math.random() * Math.PI * 2, depth: 0 }];
 
-// 1. Growing vessel tree
-class VesselTree {
-  constructor(x, y) {
-    this.x = x; this.y = y;
-    this.life = 1;
-    this.branches = [];
-    this._intervals = [];
-    this.spawn(x, y, Math.random() * Math.PI * 2, 0);
-  }
-  spawn(x, y, angle, depth) {
-    if (depth > 5) return;
-    if (this.branches.length > 40) return; // cap branches
+  while (queue.length > 0 && branches.length < 30) {
+    const { x, y, angle, depth } = queue.shift();
+    if (depth > 5) continue;
+
     const len = (Math.random() * 200 + 120) * (1 - depth * 0.08);
     const segments = Math.floor(Math.random() * 8 + 4);
-    const branch = { pts: [{ x, y }], depth, done: false };
-    this.branches.push(branch);
+    const pts = [{ x, y }];
+    let cx = x, cy = y, ca = angle;
 
-    let curX = x, curY = y, curAngle = angle;
-    let step = 0;
-    const interval = setInterval(() => {
-      if (this.life <= 0 || step >= segments) {
-        clearInterval(interval);
-        branch.done = true;
-        if (this.life > 0 && step >= segments && depth < 4 && Math.random() > 0.3) {
-          const forks = depth < 2 ? Math.floor(Math.random() * 2 + 2) : Math.floor(Math.random() * 2 + 1);
-          for (let i = 0; i < forks; i++) {
-            const spread = (Math.random() - 0.5) * 3.2;
-            this.spawn(curX, curY, curAngle + spread, depth + 1);
-          }
-        }
-        return;
+    for (let i = 0; i < segments; i++) {
+      ca += (Math.random() - 0.5) * 0.6;
+      const sl = len / segments;
+      cx += Math.cos(ca) * sl;
+      cy += Math.sin(ca) * sl;
+      pts.push({ x: cx, y: cy });
+    }
+
+    branches.push({ pts, depth, totalPts: pts.length });
+
+    // Fork
+    if (depth < 4 && Math.random() > 0.3) {
+      const forks = depth < 2 ? Math.floor(Math.random() * 2 + 2) : Math.floor(Math.random() * 2 + 1);
+      for (let i = 0; i < forks; i++) {
+        const spread = (Math.random() - 0.5) * 3.2;
+        queue.push({ x: cx, y: cy, angle: ca + spread, depth: depth + 1 });
       }
-      curAngle += (Math.random() - 0.5) * 0.6;
-      const segLen = len / segments;
-      curX += Math.cos(curAngle) * segLen;
-      curY += Math.sin(curAngle) * segLen;
-      branch.pts.push({ x: curX, y: curY });
-      step++;
-    }, 15);
-    this._intervals.push(interval);
+    }
   }
-  cleanup() { this._intervals.forEach(i => clearInterval(i)); }
-  update() { this.life -= 0.008; if (this.life <= 0) this.cleanup(); }
-  draw() {
-    if (this.life <= 0) return;
-    const fade = Math.min(1, this.life * 2); // fade out in second half
-    for (const b of this.branches) {
-      if (b.pts.length < 2) continue;
+
+  return branches;
+}
+
+// ==============================
+// EFFECT POOL - fixed size arrays
+// ==============================
+const MAX_TREES = 8;
+const MAX_RINGS = 12;
+const MAX_PARTICLES = 50;
+
+const trees = [];     // { branches, birth, life }
+const rings = [];     // { x, y, r, maxR, life }
+const glows = [];     // { x, y, r, maxR, life }
+const particles = []; // { x, y, vx, vy, life, decay, size }
+
+function addTree(x, y) {
+  // Kill oldest if at cap
+  while (trees.length >= MAX_TREES) {
+    trees.shift();
+  }
+  const branches = buildTree(x, y);
+  trees.push({ branches, birth: performance.now(), life: 1 });
+}
+
+function addRing(x, y) {
+  if (rings.length >= MAX_RINGS) rings.shift();
+  rings.push({ x, y, r: 0, maxR: Math.random() * 80 + 60, life: 1 });
+}
+
+function addGlow(x, y) {
+  if (glows.length >= 6) glows.shift();
+  glows.push({ x, y, r: 5, maxR: 120, life: 1 });
+}
+
+function addParticle(x, y) {
+  if (particles.length >= MAX_PARTICLES) particles.shift();
+  const a = Math.random() * Math.PI * 2;
+  const s = Math.random() * 2.5 + 0.8;
+  particles.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, life: 1, decay: Math.random()*0.018+0.008, size: Math.random()*1.8+0.5 });
+}
+
+// ==============================
+// DRAW
+// ==============================
+function drawTrees(t) {
+  for (let i = trees.length - 1; i >= 0; i--) {
+    const tree = trees[i];
+    tree.life -= 0.008;
+    if (tree.life <= 0) { trees.splice(i, 1); continue; }
+
+    const elapsed = (t - tree.birth) / 1000; // seconds since birth
+    const fade = Math.min(1, tree.life * 2);
+
+    for (const b of tree.branches) {
+      // Animated reveal: show points based on time + depth
+      const revealTime = elapsed - b.depth * 0.15;
+      if (revealTime <= 0) continue;
+      const showPts = Math.min(b.pts.length, Math.floor(revealTime * 40) + 1);
+      if (showPts < 2) continue;
+
       const w = Math.max(0.3, 2 - b.depth * 0.35);
       const a = fade * (1 - b.depth * 0.12) * 0.6;
 
       ctx.beginPath();
       ctx.moveTo(b.pts[0].x, b.pts[0].y);
-      for (let i = 1; i < b.pts.length; i++) {
-        ctx.lineTo(b.pts[i].x, b.pts[i].y);
+      for (let j = 1; j < showPts; j++) {
+        ctx.lineTo(b.pts[j].x, b.pts[j].y);
       }
       ctx.strokeStyle = `rgba(180, 35, 55, ${a})`;
       ctx.lineWidth = w;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.shadowColor = `rgba(220, 50, 70, ${a * 0.6})`;
-      ctx.shadowBlur = 8;
       ctx.stroke();
-      ctx.shadowBlur = 0;
 
-      // Glowing tip while growing
-      if (!b.done) {
-        const tip = b.pts[b.pts.length - 1];
+      // Tip glow (no shadowBlur - just a circle)
+      if (showPts < b.pts.length) {
+        const tip = b.pts[showPts - 1];
         ctx.beginPath();
-        ctx.arc(tip.x, tip.y, 2.5 - b.depth * 0.3, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 120, 140, ${a})`;
-        ctx.shadowColor = `rgba(255, 100, 120, ${a})`;
-        ctx.shadowBlur = 12;
+        ctx.arc(tip.x, tip.y, 3 - b.depth * 0.3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 120, 140, ${a * 0.8})`;
         ctx.fill();
-        ctx.shadowBlur = 0;
       }
     }
   }
 }
 
-// 2. Expanding ring
-class Ring {
-  constructor(x, y, delay) {
-    this.x = x; this.y = y;
-    this.r = 0; this.maxR = Math.random() * 80 + 60;
-    this.life = 1; this.delay = delay || 0;
-    this.started = false;
-  }
-  update() {
-    if (this.delay > 0) { this.delay--; return; }
-    this.started = true;
-    this.r += 1.8;
-    this.life = Math.max(0, 1 - this.r / this.maxR);
-  }
-  draw() {
-    if (!this.started || this.life <= 0) return;
+function drawRings() {
+  for (let i = rings.length - 1; i >= 0; i--) {
+    const r = rings[i];
+    r.r += 1.8;
+    r.life = Math.max(0, 1 - r.r / r.maxR);
+    if (r.life <= 0) { rings.splice(i, 1); continue; }
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(160, 35, 55, ${this.life * 0.3})`;
+    ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(160, 35, 55, ${r.life * 0.3})`;
     ctx.lineWidth = 1;
     ctx.stroke();
   }
 }
 
-// 3. Soft glow burst
-class Glow {
-  constructor(x, y) {
-    this.x = x; this.y = y;
-    this.r = 5; this.maxR = 120;
-    this.life = 1;
-  }
-  update() {
-    this.r += 1.5;
-    this.life = Math.max(0, 1 - this.r / this.maxR);
-  }
-  draw() {
-    if (this.life <= 0) return;
-    const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
-    g.addColorStop(0, `rgba(180, 40, 60, ${this.life * 0.15})`);
-    g.addColorStop(0.5, `rgba(120, 20, 40, ${this.life * 0.05})`);
-    g.addColorStop(1, 'transparent');
-    ctx.fillStyle = g;
+function drawGlows() {
+  for (let i = glows.length - 1; i >= 0; i--) {
+    const g = glows[i];
+    g.r += 1.5;
+    g.life = Math.max(0, 1 - g.r / g.maxR);
+    if (g.life <= 0) { glows.splice(i, 1); continue; }
+    const gr = ctx.createRadialGradient(g.x, g.y, 0, g.x, g.y, g.r);
+    gr.addColorStop(0, `rgba(180, 40, 60, ${g.life * 0.15})`);
+    gr.addColorStop(1, 'transparent');
+    ctx.fillStyle = gr;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.arc(g.x, g.y, g.r, 0, Math.PI * 2);
     ctx.fill();
   }
 }
 
-// 4. Micro particles
-class Particle {
-  constructor(x, y) {
-    this.x = x; this.y = y;
-    const a = Math.random() * Math.PI * 2;
-    const s = Math.random() * 2.5 + 0.8;
-    this.vx = Math.cos(a) * s;
-    this.vy = Math.sin(a) * s;
-    this.life = 1;
-    this.decay = Math.random() * 0.018 + 0.008;
-    this.size = Math.random() * 1.8 + 0.5;
-  }
-  update() {
-    this.x += this.vx; this.y += this.vy;
-    this.vx *= 0.97; this.vy *= 0.97;
-    this.life -= this.decay;
-  }
-  draw() {
-    if (this.life <= 0) return;
+function drawParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.97; p.vy *= 0.97;
+    p.life -= p.decay;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(190, 50, 70, ${this.life * 0.45})`;
+    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(190, 50, 70, ${p.life * 0.45})`;
     ctx.fill();
   }
 }
 
+// ==============================
+// INTERACTION
+// ==============================
 let lastTap = 0;
 function onInteract(x, y) {
   const now = Date.now();
-  if (now - lastTap < 150) return; // throttle rapid taps
+  if (now - lastTap < 200) return;
   lastTap = now;
 
-  // Remove oldest trees if too many
-  const trees = effects.filter(e => e instanceof VesselTree);
-  if (trees.length > 6) {
-    trees.slice(0, trees.length - 4).forEach(t => { t.life = 0; t.cleanup(); });
-  }
-
-  // 4 vessel trees per tap
   for (let i = 0; i < 4; i++) {
-    effects.push(new VesselTree(x + (Math.random()-0.5)*20, y + (Math.random()-0.5)*20));
+    addTree(x + (Math.random()-0.5)*20, y + (Math.random()-0.5)*20);
   }
-  // Glow
-  effects.push(new Glow(x, y));
-  // Rings with stagger
-  for (let i = 0; i < 3; i++) {
-    effects.push(new Ring(x, y, i * 8));
-  }
-  // Particles
-  for (let i = 0; i < 12; i++) {
-    effects.push(new Particle(x, y));
-  }
+  addGlow(x, y);
+  for (let i = 0; i < 3; i++) addRing(x, y);
+  for (let i = 0; i < 10; i++) addParticle(x, y);
 }
 
 document.addEventListener('click', e => onInteract(e.clientX, e.clientY));
@@ -359,12 +351,11 @@ document.addEventListener('touchstart', e => {
 // MAIN LOOP
 // ==============================
 function animate(t) {
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawBackground(t || 0);
-
-  effects = effects.filter(e => e.life > 0);
-  for (const e of effects) { e.update(); e.draw(); }
-
+  drawTrees(t || 0);
+  drawRings();
+  drawGlows();
+  drawParticles();
   requestAnimationFrame(animate);
 }
 animate();
