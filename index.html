@@ -218,7 +218,7 @@ class VesselTree {
     this._intervals.length = 0;
     this.branches.length = 0;
   }
-  update() { this.life -= 0.008; if (this.life <= 0 && !this.dead) this.cleanup(); }
+  update() { this.life -= 0.003; if (this.life <= 0 && !this.dead) this.cleanup(); } // ~5.5s
   draw() {
     if (this.life <= 0) return;
     const fade = Math.min(1, this.life * 2); // fade out in second half
