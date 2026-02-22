@@ -174,24 +174,25 @@ class VesselTree {
     this.x = x; this.y = y;
     this.life = 1;
     this.branches = [];
+    this._intervals = [];
     this.spawn(x, y, Math.random() * Math.PI * 2, 0);
   }
   spawn(x, y, angle, depth) {
-    if (depth > 7) return;
-    const len = (Math.random() * 250 + 150) * (1 - depth * 0.06);
-    const segments = Math.floor(Math.random() * 10 + 6);
+    if (depth > 5) return;
+    if (this.branches.length > 40) return; // cap branches
+    const len = (Math.random() * 200 + 120) * (1 - depth * 0.08);
+    const segments = Math.floor(Math.random() * 8 + 4);
     const branch = { pts: [{ x, y }], depth, done: false };
     this.branches.push(branch);
 
     let curX = x, curY = y, curAngle = angle;
     let step = 0;
     const interval = setInterval(() => {
-      if (step >= segments) {
+      if (this.life <= 0 || step >= segments) {
         clearInterval(interval);
         branch.done = true;
-        // Fork
-        if (depth < 6 && Math.random() > 0.2) {
-          const forks = depth < 3 ? Math.floor(Math.random() * 3 + 2) : Math.floor(Math.random() * 2 + 1);
+        if (this.life > 0 && step >= segments && depth < 4 && Math.random() > 0.3) {
+          const forks = depth < 2 ? Math.floor(Math.random() * 2 + 2) : Math.floor(Math.random() * 2 + 1);
           for (let i = 0; i < forks; i++) {
             const spread = (Math.random() - 0.5) * 3.2;
             this.spawn(curX, curY, curAngle + spread, depth + 1);
@@ -206,8 +207,10 @@ class VesselTree {
       branch.pts.push({ x: curX, y: curY });
       step++;
     }, 15);
+    this._intervals.push(interval);
   }
-  update() { this.life -= 0.008; } // ~2 seconds
+  cleanup() { this._intervals.forEach(i => clearInterval(i)); }
+  update() { this.life -= 0.008; if (this.life <= 0) this.cleanup(); }
   draw() {
     if (this.life <= 0) return;
     const fade = Math.min(1, this.life * 2); // fade out in second half
@@ -319,7 +322,18 @@ class Particle {
   }
 }
 
+let lastTap = 0;
 function onInteract(x, y) {
+  const now = Date.now();
+  if (now - lastTap < 150) return; // throttle rapid taps
+  lastTap = now;
+
+  // Remove oldest trees if too many
+  const trees = effects.filter(e => e instanceof VesselTree);
+  if (trees.length > 6) {
+    trees.slice(0, trees.length - 4).forEach(t => { t.life = 0; t.cleanup(); });
+  }
+
   // 4 vessel trees per tap
   for (let i = 0; i < 4; i++) {
     effects.push(new VesselTree(x + (Math.random()-0.5)*20, y + (Math.random()-0.5)*20));
