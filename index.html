@@ -3,534 +3,371 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>בהצלחה שוש! 🩸</title>
+<title>בהצלחה שוש</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@200;300;400;700&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: 'Heebo', sans-serif;
-  background: #0a0000;
+  background: #080008;
   color: #fff;
   overflow-x: hidden;
   min-height: 100vh;
-  cursor: crosshair;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Canvas layers */
-#bg-canvas, #fg-canvas {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none;
-}
-#bg-canvas { z-index: 0; }
-#fg-canvas { z-index: 10; }
-
-/* Vein SVG background */
-.vein-bg {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  z-index: 1; opacity: 0.15; pointer-events: none;
+canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
 }
 
-/* Main content */
 .content {
-  position: relative; z-index: 5;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 100vh; padding: 2rem; text-align: center;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
 }
 
-/* Heartbeat ring */
-.heart-ring {
-  width: 280px; height: 280px; border-radius: 50%;
-  border: 3px solid rgba(220, 20, 60, 0.4);
-  display: flex; align-items: center; justify-content: center;
-  position: relative; margin-bottom: 2rem;
-  animation: heartbeat 1.2s ease-in-out infinite;
-}
-.heart-ring::before, .heart-ring::after {
-  content: ''; position: absolute; border-radius: 50%;
-  border: 2px solid rgba(220, 20, 60, 0.2);
-}
-.heart-ring::before { width: 320px; height: 320px; animation: heartbeat 1.2s ease-in-out infinite 0.1s; }
-.heart-ring::after { width: 360px; height: 360px; animation: heartbeat 1.2s ease-in-out infinite 0.2s; }
-
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  15% { transform: scale(1.08); opacity: 1; }
-  30% { transform: scale(1); opacity: 0.8; }
-  45% { transform: scale(1.05); opacity: 1; }
-  60% { transform: scale(1); }
-}
-
-/* Heart SVG inside ring */
-.heart-icon {
-  width: 120px; height: 120px;
-  filter: drop-shadow(0 0 20px rgba(220, 20, 60, 0.8)) drop-shadow(0 0 60px rgba(220, 20, 60, 0.4));
-  animation: heartPump 1.2s ease-in-out infinite;
-}
-@keyframes heartPump {
-  0%, 100% { transform: scale(1); }
-  15% { transform: scale(1.15); }
-  30% { transform: scale(0.95); }
-  45% { transform: scale(1.1); }
-  60% { transform: scale(1); }
-}
-
-/* Main title */
 .title {
-  font-size: clamp(2.5rem, 8vw, 5rem);
-  font-weight: 900;
-  background: linear-gradient(135deg, #ff1a1a, #ff6b6b, #ff1a1a, #cc0000);
-  background-size: 300% 300%;
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3s ease-in-out infinite;
-  text-shadow: none;
-  filter: drop-shadow(0 0 30px rgba(220, 20, 60, 0.5));
-  margin-bottom: 1rem;
-  opacity: 0; animation: shimmer 3s ease-in-out infinite, fadeInUp 1s 0.5s forwards;
-}
-@keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  font-size: clamp(2.8rem, 10vw, 5.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: revealText 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
 }
 
 .subtitle {
-  font-size: clamp(1.2rem, 4vw, 2rem);
-  font-weight: 300; color: rgba(255, 107, 107, 0.9);
-  margin-bottom: 0.5rem;
-  opacity: 0; animation: fadeInUp 1s 0.8s forwards;
+  font-size: clamp(1rem, 3.5vw, 1.6rem);
+  font-weight: 200;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 1rem;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: revealText 1s cubic-bezier(0.16, 1, 0.3, 1) 1s forwards;
 }
 
-.exam-text {
-  font-size: clamp(1rem, 3vw, 1.5rem);
-  color: rgba(255, 150, 150, 0.7);
-  margin-bottom: 2rem;
-  opacity: 0; animation: fadeInUp 1s 1.1s forwards;
+.line {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(180, 40, 60, 0.8), transparent);
+  margin: 2rem auto;
+  opacity: 0;
+  animation: revealText 1s ease 1.4s forwards;
 }
 
-/* Floating blood cells */
-.blood-cell {
-  position: fixed; border-radius: 50%;
-  pointer-events: none; z-index: 2;
-  animation: floatCell linear infinite;
-}
-@keyframes floatCell {
-  0% { transform: translateY(110vh) rotate(0deg) scale(1); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateY(-10vh) rotate(360deg) scale(0.8); opacity: 0; }
+.anatomy-text {
+  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+  font-weight: 300;
+  color: rgba(180, 40, 60, 0.6);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(15px);
+  animation: revealText 1s cubic-bezier(0.16, 1, 0.3, 1) 1.7s forwards;
 }
 
-/* EKG line */
-.ekg-container {
-  width: 90%; max-width: 400px; height: 60px;
-  margin: 1rem auto; opacity: 0;
-  animation: fadeInUp 1s 1.4s forwards;
-}
-.ekg-line {
-  stroke: #dc143c; stroke-width: 2; fill: none;
-  stroke-dasharray: 600; stroke-dashoffset: 600;
-  animation: drawEKG 2s ease-in-out 1.8s forwards;
-  filter: drop-shadow(0 0 6px rgba(220, 20, 60, 0.8));
-}
-@keyframes drawEKG {
-  to { stroke-dashoffset: 0; }
+.bottom-note {
+  position: fixed;
+  bottom: 2rem;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 200;
+  color: rgba(255,255,255,0.15);
+  z-index: 5;
+  opacity: 0;
+  animation: revealText 1s ease 2.5s forwards;
 }
 
-/* Vessel decoration lines */
-.vessel-deco {
-  position: fixed; pointer-events: none; z-index: 1;
-  opacity: 0.08;
+@keyframes revealText {
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Ripple effect on click */
-.ripple {
-  position: fixed; border-radius: 50%; pointer-events: none; z-index: 20;
-  border: 2px solid rgba(220, 20, 60, 0.8);
-  animation: rippleOut 0.8s ease-out forwards;
-}
-@keyframes rippleOut {
-  from { width: 0; height: 0; opacity: 1; }
-  to { width: 200px; height: 200px; opacity: 0; }
-}
-
-/* Blood splash particles */
-.splash {
-  position: fixed; border-radius: 50%; pointer-events: none; z-index: 20;
-  background: radial-gradient(circle, #ff3333, #cc0000);
-  animation: splashOut 0.6s ease-out forwards;
-}
-@keyframes splashOut {
-  from { opacity: 1; transform: translate(0,0) scale(1); }
-  to { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+/* Touch ripple */
+.touch-ripple {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+  border: 1px solid rgba(180, 40, 60, 0.4);
+  animation: rippleExpand 1s cubic-bezier(0, 0.5, 0.3, 1) forwards;
 }
 
-/* Pulse overlay on click */
-.pulse-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(circle at var(--x) var(--y), rgba(220,20,60,0.15), transparent 50%);
-  pointer-events: none; z-index: 8;
-  animation: pulseOverlayFade 0.5s ease-out forwards;
-}
-@keyframes pulseOverlayFade { to { opacity: 0; } }
-
-/* Motivational cards */
-.cards {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;
-  max-width: 500px; margin: 1rem auto;
-  opacity: 0; animation: fadeInUp 1s 1.7s forwards;
-}
-.card {
-  background: linear-gradient(135deg, rgba(139,0,0,0.3), rgba(220,20,60,0.1));
-  border: 1px solid rgba(220,20,60,0.3);
-  border-radius: 16px; padding: 1rem 1.5rem;
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s, box-shadow 0.3s;
-  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-}
-.card:hover, .card:active {
-  transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(220,20,60,0.4);
-}
-
-/* Artery/Vein label decoration */
-.vessel-label {
-  display: inline-block; padding: 0.3rem 1rem; border-radius: 20px;
-  font-size: 0.85rem; margin: 0.3rem;
-  opacity: 0; animation: fadeInUp 0.8s 2s forwards;
-}
-.artery { background: rgba(200,0,0,0.3); border: 1px solid rgba(255,50,50,0.4); color: #ff6b6b; }
-.vein { background: rgba(0,0,150,0.2); border: 1px solid rgba(100,100,255,0.3); color: #8888ff; }
-
-/* Bottom decoration */
-.bottom-deco {
-  margin-top: 2rem; opacity: 0;
-  animation: fadeInUp 1s 2.2s forwards;
-  color: rgba(255,107,107,0.5); font-size: 0.9rem;
-}
-
-/* Floating emojis */
-.float-emoji {
-  position: fixed; font-size: 1.5rem; pointer-events: none; z-index: 3;
-  animation: floatEmoji linear infinite;
-}
-@keyframes floatEmoji {
-  0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
-  10% { opacity: 0.7; }
-  90% { opacity: 0.7; }
-  100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
-}
-
-/* Glowing vein paths */
-.glow-vein {
-  position: fixed; pointer-events: none; z-index: 1;
-}
-.glow-vein path {
-  fill: none; stroke: rgba(139,0,0,0.15); stroke-width: 3;
-  stroke-linecap: round;
-}
-
-/* Screen flash on heartbeat */
-.screen-pulse {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none; z-index: 0;
-  background: radial-gradient(ellipse at center, rgba(139,0,0,0.08), transparent 70%);
-  animation: screenPulse 1.2s ease-in-out infinite;
-}
-@keyframes screenPulse {
-  0%, 100% { opacity: 0.3; }
-  15% { opacity: 1; }
-  45% { opacity: 0.8; }
-  60% { opacity: 0.3; }
+@keyframes rippleExpand {
+  from { width: 0; height: 0; opacity: 0.8; }
+  to { width: 300px; height: 300px; opacity: 0; }
 }
 </style>
 </head>
 <body>
 
-<div class="screen-pulse"></div>
-<canvas id="bg-canvas"></canvas>
-<canvas id="fg-canvas"></canvas>
-
-<!-- Animated vein network SVG -->
-<svg class="glow-vein" width="100%" height="100%" viewBox="0 0 400 800" preserveAspectRatio="none">
-  <path d="M0,100 Q100,150 200,100 T400,120" stroke-dasharray="8 12" opacity="0.3">
-    <animate attributeName="stroke-dashoffset" from="0" to="-40" dur="2s" repeatCount="indefinite"/>
-  </path>
-  <path d="M0,300 Q150,250 200,300 T400,280" stroke-dasharray="8 12" opacity="0.2">
-    <animate attributeName="stroke-dashoffset" from="0" to="-40" dur="2.5s" repeatCount="indefinite"/>
-  </path>
-  <path d="M0,500 Q100,550 250,480 T400,520" stroke-dasharray="8 12" opacity="0.25">
-    <animate attributeName="stroke-dashoffset" from="0" to="-40" dur="1.8s" repeatCount="indefinite"/>
-  </path>
-  <path d="M0,700 Q200,650 300,720 T400,690" stroke-dasharray="8 12" opacity="0.2">
-    <animate attributeName="stroke-dashoffset" from="0" to="-40" dur="3s" repeatCount="indefinite"/>
-  </path>
-  <path d="M200,0 Q180,200 220,400 T200,800" stroke-dasharray="6 10" opacity="0.15">
-    <animate attributeName="stroke-dashoffset" from="0" to="-32" dur="2.2s" repeatCount="indefinite"/>
-  </path>
-</svg>
+<canvas id="canvas"></canvas>
 
 <div class="content">
-  <!-- Heart ring -->
-  <div class="heart-ring">
-    <svg class="heart-icon" viewBox="0 0 100 100">
-      <defs>
-        <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#ff1a1a"/>
-          <stop offset="50%" style="stop-color:#dc143c"/>
-          <stop offset="100%" style="stop-color:#8b0000"/>
-        </linearGradient>
-      </defs>
-      <path d="M50 88 C25 65, 2 45, 2 28 C2 14, 14 2, 28 2 C38 2, 46 8, 50 18 C54 8, 62 2, 72 2 C86 2, 98 14, 98 28 C98 45, 75 65, 50 88Z" fill="url(#hg)"/>
-    </svg>
-  </div>
-
-  <div class="title">בהצלחה שוש! 🩸</div>
-  <div class="subtitle">את הולכת לנפץ את הבחינה 💪</div>
-  <div class="exam-text">אנטומיה · כלי דם · עורקים · ורידים · נימים</div>
-
-  <!-- EKG -->
-  <svg class="ekg-container" viewBox="0 0 400 60">
-    <polyline class="ekg-line" points="0,30 60,30 80,30 90,10 100,50 110,5 120,55 130,30 150,30 200,30 220,30 230,10 240,50 250,5 260,55 270,30 290,30 400,30"/>
-  </svg>
-
-  <!-- Labels -->
-  <div>
-    <span class="vessel-label artery">🔴 עורקים</span>
-    <span class="vessel-label vein">🔵 ורידים</span>
-    <span class="vessel-label artery">🩸 נימים</span>
-  </div>
-
-  <!-- Motivational cards -->
-  <div class="cards">
-    <div class="card">🫀 הלב שלך יודע את כל התשובות</div>
-    <div class="card">🧠 הדם זורם, הידע זורם</div>
-    <div class="card">💉 את מוכנה לזה!</div>
-    <div class="card">🔬 כל כלי דם מוביל להצלחה</div>
-  </div>
-
-  <div class="bottom-deco">
-    לחצי בכל מקום על המסך ✨<br>
-    <small style="opacity:0.5">נעשה באהבה ❤️</small>
-  </div>
+  <div class="title">בהצלחה, שוש</div>
+  <div class="subtitle">את תהיי מדהימה</div>
+  <div class="line"></div>
+  <div class="anatomy-text">אנטומיה · כלי דם</div>
 </div>
 
+<div class="bottom-note">גע במסך</div>
+
 <script>
-// === Background Canvas - Blood cell particles ===
-const bgCanvas = document.getElementById('bg-canvas');
-const bgCtx = bgCanvas.getContext('2d');
-const fgCanvas = document.getElementById('fg-canvas');
-const fgCtx = fgCanvas.getContext('2d');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+let mouse = { x: null, y: null, active: false };
+let time = 0;
 
 function resize() {
-  bgCanvas.width = fgCanvas.width = window.innerWidth;
-  bgCanvas.height = fgCanvas.height = window.innerHeight;
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
 }
 resize();
 window.addEventListener('resize', resize);
 
-// Blood cell particles (background)
-class BloodCell {
-  constructor() { this.reset(); }
-  reset() {
-    this.x = Math.random() * bgCanvas.width;
-    this.y = bgCanvas.height + Math.random() * 100;
-    this.size = Math.random() * 6 + 2;
-    this.speedY = -(Math.random() * 0.8 + 0.2);
-    this.speedX = (Math.random() - 0.5) * 0.5;
-    this.opacity = Math.random() * 0.5 + 0.1;
-    this.hue = Math.random() > 0.7 ? 240 : 0; // some blue (veins), mostly red
-    this.wobble = Math.random() * Math.PI * 2;
-    this.wobbleSpeed = Math.random() * 0.02 + 0.01;
+// --- Vein network ---
+// Organic branching vessel paths that respond to touch
+class Vessel {
+  constructor() {
+    this.points = [];
+    this.generate();
+    this.width = Math.random() * 2 + 0.5;
+    this.speed = Math.random() * 0.3 + 0.1;
+    this.offset = Math.random() * 1000;
+    this.hue = Math.random() > 0.3 ? 0 : 230; // red or blue
+    this.alpha = Math.random() * 0.12 + 0.03;
+    this.pulsePhase = Math.random() * Math.PI * 2;
   }
-  update() {
-    this.y += this.speedY;
-    this.wobble += this.wobbleSpeed;
-    this.x += this.speedX + Math.sin(this.wobble) * 0.3;
-    if (this.y < -20) this.reset();
+
+  generate() {
+    const startSide = Math.floor(Math.random() * 4);
+    let x, y;
+    if (startSide === 0) { x = 0; y = Math.random() * H; }
+    else if (startSide === 1) { x = W; y = Math.random() * H; }
+    else if (startSide === 2) { x = Math.random() * W; y = 0; }
+    else { x = Math.random() * W; y = H; }
+
+    this.points = [{ x, y }];
+    const segments = Math.floor(Math.random() * 8 + 6);
+    for (let i = 0; i < segments; i++) {
+      const last = this.points[this.points.length - 1];
+      const angle = Math.atan2(H/2 - last.y, W/2 - last.x) + (Math.random() - 0.5) * 1.5;
+      const dist = Math.random() * 120 + 60;
+      this.points.push({
+        x: last.x + Math.cos(angle) * dist,
+        y: last.y + Math.sin(angle) * dist
+      });
+    }
   }
-  draw(ctx) {
-    ctx.save();
-    ctx.globalAlpha = this.opacity;
+
+  draw(t) {
+    if (this.points.length < 2) return;
+    const pulse = Math.sin(t * 0.002 + this.pulsePhase) * 0.5 + 0.5;
+    const alpha = this.alpha * (0.6 + pulse * 0.4);
+
+    // Proximity glow
+    let proxBoost = 0;
+    if (mouse.active) {
+      for (const p of this.points) {
+        const d = Math.hypot(p.x - mouse.x, p.y - mouse.y);
+        if (d < 200) proxBoost = Math.max(proxBoost, (1 - d / 200) * 0.3);
+      }
+    }
+
     ctx.beginPath();
-    // Biconcave disc shape (ellipse)
-    ctx.ellipse(this.x, this.y, this.size, this.size * 0.6, 0, 0, Math.PI * 2);
-    const color = this.hue === 0 ? `rgba(200,20,20,${this.opacity})` : `rgba(80,80,200,${this.opacity})`;
-    ctx.fillStyle = color;
-    ctx.shadowColor = this.hue === 0 ? '#ff0000' : '#4444ff';
-    ctx.shadowBlur = 10;
+    ctx.moveTo(this.points[0].x, this.points[0].y);
+    for (let i = 1; i < this.points.length - 1; i++) {
+      const xc = (this.points[i].x + this.points[i + 1].x) / 2;
+      const yc = (this.points[i].y + this.points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(this.points[i].x, this.points[i].y, xc, yc);
+    }
+    const last = this.points[this.points.length - 1];
+    ctx.lineTo(last.x, last.y);
+
+    const r = this.hue === 0 ? 140 : 60;
+    const g = this.hue === 0 ? 20 : 60;
+    const b = this.hue === 0 ? 30 : 140;
+    ctx.strokeStyle = `rgba(${r},${g},${b},${alpha + proxBoost})`;
+    ctx.lineWidth = this.width + pulse * 0.5 + proxBoost * 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Flow particles along vessel
+    this.drawFlow(t, alpha + proxBoost);
+  }
+
+  drawFlow(t, alpha) {
+    const flowPos = ((t * this.speed * 0.001 + this.offset) % 1);
+    const totalLen = this.points.length - 1;
+    const idx = Math.floor(flowPos * totalLen);
+    const frac = (flowPos * totalLen) - idx;
+    if (idx >= this.points.length - 1) return;
+
+    const p1 = this.points[idx];
+    const p2 = this.points[idx + 1];
+    const fx = p1.x + (p2.x - p1.x) * frac;
+    const fy = p1.y + (p2.y - p1.y) * frac;
+
+    const r = this.hue === 0 ? 200 : 100;
+    const g = this.hue === 0 ? 30 : 100;
+    const b = this.hue === 0 ? 40 : 200;
+
+    ctx.beginPath();
+    ctx.arc(fx, fy, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${r},${g},${b},${Math.min(alpha * 3, 0.5)})`;
+    ctx.shadowColor = `rgba(${r},${g},${b},0.5)`;
+    ctx.shadowBlur = 12;
     ctx.fill();
-    ctx.restore();
+    ctx.shadowBlur = 0;
   }
 }
 
-const cells = Array.from({length: 60}, () => new BloodCell());
+// --- Floating cells (subtle, organic) ---
+class Cell {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = H + Math.random() * 50;
+    this.size = Math.random() * 3 + 1;
+    this.vy = -(Math.random() * 0.3 + 0.08);
+    this.vx = (Math.random() - 0.5) * 0.15;
+    this.wobbleSpeed = Math.random() * 0.008 + 0.003;
+    this.wobbleAmp = Math.random() * 20 + 10;
+    this.phase = Math.random() * Math.PI * 2;
+    this.opacity = Math.random() * 0.15 + 0.03;
+    this.isBlue = Math.random() > 0.75;
+  }
+  update(t) {
+    this.y += this.vy;
+    this.x += this.vx + Math.sin(t * this.wobbleSpeed + this.phase) * 0.2;
 
-// Click/tap splash particles
-let splashParticles = [];
-class SplashParticle {
+    // Repel from touch
+    if (mouse.active) {
+      const dx = this.x - mouse.x;
+      const dy = this.y - mouse.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 120 && d > 0) {
+        const force = (1 - d / 120) * 2;
+        this.x += (dx / d) * force;
+        this.y += (dy / d) * force;
+      }
+    }
+
+    if (this.y < -20) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, this.size, this.size * 0.6, 0, 0, Math.PI * 2);
+    if (this.isBlue) {
+      ctx.fillStyle = `rgba(80, 80, 160, ${this.opacity})`;
+    } else {
+      ctx.fillStyle = `rgba(160, 30, 30, ${this.opacity})`;
+    }
+    ctx.fill();
+  }
+}
+
+// --- Touch particles ---
+let touchParticles = [];
+class TouchParticle {
   constructor(x, y) {
     this.x = x; this.y = y;
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 4 + 2;
+    const speed = Math.random() * 2 + 0.5;
     this.vx = Math.cos(angle) * speed;
     this.vy = Math.sin(angle) * speed;
-    this.size = Math.random() * 5 + 2;
     this.life = 1;
-    this.decay = Math.random() * 0.03 + 0.02;
+    this.decay = Math.random() * 0.015 + 0.008;
+    this.size = Math.random() * 2 + 0.5;
   }
   update() {
     this.x += this.vx;
     this.y += this.vy;
-    this.vy += 0.05; // gravity
+    this.vx *= 0.98;
+    this.vy *= 0.98;
     this.life -= this.decay;
   }
-  draw(ctx) {
+  draw() {
     if (this.life <= 0) return;
-    ctx.save();
-    ctx.globalAlpha = this.life;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
-    ctx.fillStyle = `hsl(${Math.random() > 0.5 ? 0 : 350}, 90%, ${40 + this.life * 20}%)`;
-    ctx.shadowColor = '#ff0000';
-    ctx.shadowBlur = 8;
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(180, 40, 60, ${this.life * 0.4})`;
     ctx.fill();
-    ctx.restore();
   }
 }
 
-// Vein pulse waves on click
-let pulseWaves = [];
-class PulseWave {
-  constructor(x, y) {
-    this.x = x; this.y = y;
-    this.radius = 0; this.maxRadius = 150;
-    this.life = 1;
+// Initialize
+const vessels = Array.from({ length: 18 }, () => new Vessel());
+const cells = Array.from({ length: 40 }, () => new Cell());
+
+// Handle touch/click
+function onInteract(x, y) {
+  mouse.x = x; mouse.y = y; mouse.active = true;
+
+  for (let i = 0; i < 20; i++) {
+    touchParticles.push(new TouchParticle(x, y));
   }
-  update() {
-    this.radius += 3;
-    this.life = 1 - (this.radius / this.maxRadius);
-  }
-  draw(ctx) {
-    if (this.life <= 0) return;
-    ctx.save();
-    ctx.globalAlpha = this.life * 0.5;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.strokeStyle = '#dc143c';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = '#ff0000';
-    ctx.shadowBlur = 15;
-    ctx.stroke();
-    ctx.restore();
-  }
+
+  const ripple = document.createElement('div');
+  ripple.className = 'touch-ripple';
+  ripple.style.left = (x - 150) + 'px';
+  ripple.style.top = (y - 150) + 'px';
+  document.body.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 1000);
+
+  clearTimeout(window._mouseTimeout);
+  window._mouseTimeout = setTimeout(() => { mouse.active = false; }, 2000);
 }
 
-// Animation loop
-function animate() {
-  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-  fgCtx.clearRect(0, 0, fgCanvas.width, fgCanvas.height);
+document.addEventListener('click', e => onInteract(e.clientX, e.clientY));
+document.addEventListener('touchstart', e => {
+  for (const t of e.touches) onInteract(t.clientX, t.clientY);
+}, { passive: true });
+document.addEventListener('touchmove', e => {
+  for (const t of e.touches) { mouse.x = t.clientX; mouse.y = t.clientY; }
+}, { passive: true });
 
-  // Draw background cells
-  cells.forEach(c => { c.update(); c.draw(bgCtx); });
+// Heartbeat subtle glow
+function drawHeartbeat(t) {
+  const beat = Math.pow(Math.sin(t * 0.004) * 0.5 + 0.5, 8);
+  if (beat < 0.01) return;
+  const gradient = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.5);
+  gradient.addColorStop(0, `rgba(100, 10, 20, ${beat * 0.06})`);
+  gradient.addColorStop(1, 'transparent');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, W, H);
+}
 
-  // Draw splash particles
-  splashParticles = splashParticles.filter(p => p.life > 0);
-  splashParticles.forEach(p => { p.update(); p.draw(fgCtx); });
+// Main loop
+function animate(t) {
+  time = t || 0;
+  ctx.clearRect(0, 0, W, H);
 
-  // Draw pulse waves
-  pulseWaves = pulseWaves.filter(w => w.life > 0);
-  pulseWaves.forEach(w => { w.update(); w.draw(fgCtx); });
+  drawHeartbeat(time);
+  vessels.forEach(v => v.draw(time));
+  cells.forEach(c => { c.update(time); c.draw(); });
+
+  touchParticles = touchParticles.filter(p => p.life > 0);
+  touchParticles.forEach(p => { p.update(); p.draw(); });
 
   requestAnimationFrame(animate);
 }
 animate();
-
-// === Click/Touch Interaction ===
-function handleInteraction(x, y) {
-  // Splash particles
-  for (let i = 0; i < 15; i++) {
-    splashParticles.push(new SplashParticle(x, y));
-  }
-  // Pulse wave
-  pulseWaves.push(new PulseWave(x, y));
-
-  // DOM ripple
-  const ripple = document.createElement('div');
-  ripple.className = 'ripple';
-  ripple.style.left = (x - 100) + 'px';
-  ripple.style.top = (y - 100) + 'px';
-  document.body.appendChild(ripple);
-  setTimeout(() => ripple.remove(), 800);
-
-  // Pulse overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'pulse-overlay';
-  overlay.style.setProperty('--x', x + 'px');
-  overlay.style.setProperty('--y', y + 'px');
-  document.body.appendChild(overlay);
-  setTimeout(() => overlay.remove(), 500);
-
-  // Random floating emoji
-  const emojis = ['🩸', '❤️', '🫀', '💉', '🔬', '💪', '⭐', '✨', '🔴'];
-  const emoji = document.createElement('div');
-  emoji.style.cssText = `position:fixed;left:${x}px;top:${y}px;font-size:1.5rem;pointer-events:none;z-index:25;animation:splashEmoji 1s ease-out forwards;`;
-  emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-  document.body.appendChild(emoji);
-  setTimeout(() => emoji.remove(), 1000);
-}
-
-// Add splash emoji animation
-const style = document.createElement('style');
-style.textContent = `@keyframes splashEmoji { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-80px) scale(1.5); } }`;
-document.head.appendChild(style);
-
-document.addEventListener('click', e => handleInteraction(e.clientX, e.clientY));
-document.addEventListener('touchstart', e => {
-  Array.from(e.touches).forEach(t => handleInteraction(t.clientX, t.clientY));
-}, {passive: true});
-
-// === Spawn floating blood cells (DOM) ===
-function spawnFloatingCell() {
-  const cell = document.createElement('div');
-  cell.className = 'blood-cell';
-  const size = Math.random() * 12 + 4;
-  const isVein = Math.random() > 0.75;
-  cell.style.cssText = `
-    left: ${Math.random() * 100}vw;
-    width: ${size}px; height: ${size * 0.65}px;
-    background: radial-gradient(ellipse, ${isVein ? 'rgba(100,100,220,0.6),rgba(60,60,180,0.3)' : 'rgba(220,30,30,0.6),rgba(150,0,0,0.3)'});
-    animation-duration: ${Math.random() * 10 + 8}s;
-    animation-delay: ${Math.random() * 5}s;
-    box-shadow: 0 0 ${size}px ${isVein ? 'rgba(80,80,200,0.4)' : 'rgba(200,0,0,0.4)'};
-  `;
-  document.body.appendChild(cell);
-  cell.addEventListener('animationend', () => cell.remove());
-}
-// Spawn cells periodically
-setInterval(spawnFloatingCell, 400);
-for (let i = 0; i < 20; i++) setTimeout(spawnFloatingCell, i * 200);
-
-// === Floating emojis ===
-function spawnEmoji() {
-  const emojis = ['🩸', '❤️', '🫀', '💉', '🔬'];
-  const el = document.createElement('div');
-  el.className = 'float-emoji';
-  el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-  el.style.left = Math.random() * 100 + 'vw';
-  el.style.animationDuration = (Math.random() * 12 + 10) + 's';
-  el.style.animationDelay = Math.random() * 5 + 's';
-  document.body.appendChild(el);
-  el.addEventListener('animationend', () => el.remove());
-}
-setInterval(spawnEmoji, 3000);
-for (let i = 0; i < 5; i++) setTimeout(spawnEmoji, i * 600);
 </script>
 </body>
 </html>
