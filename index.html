@@ -204,7 +204,7 @@ class VesselTree {
       step++;
     }, 40);
   }
-  update() { this.life -= 0.002; }
+  update() { this.life -= 0.0033; } // ~5 seconds
   draw() {
     if (this.life <= 0) return;
     const fade = Math.min(1, this.life * 2); // fade out in second half
