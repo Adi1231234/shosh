@@ -320,8 +320,10 @@ class Particle {
 }
 
 function onInteract(x, y) {
-  // Vessel tree
-  effects.push(new VesselTree(x, y));
+  // 4 vessel trees per tap
+  for (let i = 0; i < 4; i++) {
+    effects.push(new VesselTree(x + (Math.random()-0.5)*20, y + (Math.random()-0.5)*20));
+  }
   // Glow
   effects.push(new Glow(x, y));
   // Rings with stagger
