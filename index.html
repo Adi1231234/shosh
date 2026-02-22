@@ -66,20 +66,21 @@ canvas {
 }
 
 .anatomy-text {
-  font-size: clamp(1.3rem, 4.5vw, 1.8rem);
-  font-weight: 400;
-  color: rgba(220, 80, 100, 0.9);
-  letter-spacing: 0.15em;
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
+  font-weight: 700;
+  color: rgba(255, 100, 120, 1);
+  letter-spacing: 0.1em;
   opacity: 0;
   transform: translateY(15px);
-  animation: revealText 1s cubic-bezier(0.16, 1, 0.3, 1) 1.7s forwards, pulse 2s ease-in-out 3s infinite;
+  animation: revealText 1s cubic-bezier(0.16, 1, 0.3, 1) 1.7s forwards, tapPulse 1.5s ease-in-out 3s infinite;
   cursor: pointer;
   pointer-events: auto;
+  text-shadow: 0 0 20px rgba(220, 50, 70, 0.5);
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.05); }
+@keyframes tapPulse {
+  0%, 100% { transform: scale(1); text-shadow: 0 0 20px rgba(220, 50, 70, 0.5); }
+  50% { transform: scale(1.12); text-shadow: 0 0 35px rgba(220, 50, 70, 0.8); }
 }
 
 .hint {
