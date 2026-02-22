@@ -167,9 +167,9 @@ class VesselTree {
     this.spawn(x, y, Math.random() * Math.PI * 2, 0);
   }
   spawn(x, y, angle, depth) {
-    if (depth > 5) return;
-    const len = (Math.random() * 40 + 20) * (1 - depth * 0.12);
-    const segments = Math.floor(Math.random() * 4 + 3);
+    if (depth > 7) return;
+    const len = (Math.random() * 80 + 50) * (1 - depth * 0.1);
+    const segments = Math.floor(Math.random() * 6 + 4);
     const branch = { pts: [{ x, y }], depth, done: false };
     this.branches.push(branch);
 
@@ -180,8 +180,8 @@ class VesselTree {
         clearInterval(interval);
         branch.done = true;
         // Fork
-        if (depth < 4 && Math.random() > 0.25) {
-          const forks = depth < 2 ? Math.floor(Math.random() * 2 + 2) : Math.floor(Math.random() * 2 + 1);
+        if (depth < 6 && Math.random() > 0.2) {
+          const forks = depth < 3 ? Math.floor(Math.random() * 3 + 2) : Math.floor(Math.random() * 2 + 1);
           for (let i = 0; i < forks; i++) {
             const spread = (Math.random() - 0.5) * 1.8;
             this.spawn(curX, curY, curAngle + spread, depth + 1);
@@ -197,7 +197,7 @@ class VesselTree {
       step++;
     }, 40);
   }
-  update() { this.life -= 0.004; }
+  update() { this.life -= 0.002; }
   draw() {
     if (this.life <= 0) return;
     const fade = Math.min(1, this.life * 2); // fade out in second half
